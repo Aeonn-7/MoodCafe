@@ -1,0 +1,2406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mood Café & Restaurant — POS System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>/* ========================================================
+   G-4 MOOD CAFÉ — Stylesheet
+   Aesthetic: Warm Dark Bistro — rich espresso tones,
+   hand-lettered accents, candlelight warmth
+   ======================================================== */
+
+:root {
+  --espresso:    #1a0f0a;
+  --roast:       #2c1810;
+  --bark:        #3d2314;
+  --caramel:     #c8813a;
+  --gold:        #e8a84a;
+  --cream:       #f5e6c8;
+  --latte:       #d4b896;
+  --foam:        #faf3e8;
+  --sage:        #7a9e7e;
+  --blush:       #c97b7b;
+  --sky:         #6b9ec4;
+  --text-main:   #f0e0c8;
+  --text-muted:  #a08060;
+  --text-light:  #f5e6c8;
+  --border:      rgba(200, 129, 58, 0.25);
+  --glass:       rgba(44, 24, 16, 0.7);
+  --shadow:      0 8px 32px rgba(0,0,0,0.5);
+  --radius:      14px;
+  --radius-sm:   8px;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-hand:    'Caveat', cursive;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--espresso);
+  color: var(--text-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Background texture */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 20%, rgba(200,129,58,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 80%, rgba(122,158,126,0.06) 0%, transparent 60%),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 40px,
+      rgba(255,255,255,0.005) 40px,
+      rgba(255,255,255,0.005) 41px
+    );
+  pointer-events: none;
+}
+
+/* ========================================================
+   LOADER
+   ======================================================== */
+#loader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--espresso);
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+#loader.fade-out { opacity: 0; pointer-events: none; }
+
+.loader-inner { text-align: center; }
+.loader-cup {
+  font-size: 64px;
+  display: block;
+  animation: cupFloat 2s ease-in-out infinite;
+  margin-bottom: 16px;
+}
+@keyframes cupFloat {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50%       { transform: translateY(-12px) rotate(5deg); }
+}
+.loader-text {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.loader-sub {
+  font-family: var(--font-hand);
+  color: var(--text-muted);
+  font-size: 18px;
+  margin-bottom: 24px;
+}
+.loader-bar {
+  width: 200px; height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 99px;
+  overflow: hidden;
+  margin: 0 auto;
+}
+.loader-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--caramel), var(--gold));
+  border-radius: 99px;
+  animation: loadFill 1.8s ease forwards;
+}
+@keyframes loadFill { from { width: 0%; } to { width: 100%; } }
+
+/* ========================================================
+   MODALS
+   ======================================================== */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(10,5,0,0.85);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+.modal-overlay.hidden { display: none; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-box {
+  background: linear-gradient(145deg, var(--roast), var(--bark));
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px;
+  width: min(480px, 92vw);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+  animation: slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-header { text-align: center; margin-bottom: 28px; }
+.modal-icon { font-size: 40px; display: block; margin-bottom: 10px; }
+.modal-header h2 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.modal-header p { color: var(--text-muted); font-size: 14px; }
+
+.form-group { margin-bottom: 18px; }
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-group input:focus,
+.form-group select:focus { border-color: var(--caramel); }
+.form-group select option { background: var(--roast); }
+
+.modal-actions { display: flex; gap: 12px; margin-top: 8px; }
+.modal-actions > * { flex: 1; }
+
+/* ========================================================
+   BUTTONS
+   ======================================================== */
+.btn-primary {
+  padding: 13px 26px;
+  background: linear-gradient(135deg, var(--caramel), var(--gold));
+  color: var(--espresso);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,129,58,0.4); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-secondary {
+  padding: 13px 26px;
+  background: transparent;
+  color: var(--caramel);
+  border: 1px solid var(--caramel);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { background: rgba(200,129,58,0.1); }
+
+.btn-ghost {
+  padding: 12px 24px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
+
+.btn-full { width: 100%; }
+.btn-sm { padding: 7px 14px; font-size: 12px; }
+
+/* ========================================================
+   TOPBAR
+   ======================================================== */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; gap: 20px;
+  padding: 0 28px;
+  height: 64px;
+  background: rgba(26,15,10,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 24px rgba(0,0,0,0.4);
+}
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.topbar-logo { font-size: 24px; }
+.topbar-brand {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--gold);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.topbar-nav { display: flex; gap: 4px; margin-left: 24px; flex: 1; }
+.nav-btn {
+  padding: 7px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 99px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-btn:hover { color: var(--text-main); background: rgba(255,255,255,0.06); }
+.nav-btn.active { background: rgba(200,129,58,0.18); color: var(--gold); }
+
+.topbar-right { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+.topbar-user { display: flex; align-items: center; gap: 8px; }
+.topbar-user > span:first-child { font-weight: 500; font-size: 14px; }
+.role-badge {
+  padding: 3px 10px;
+  background: rgba(200,129,58,0.2);
+  border: 1px solid rgba(200,129,58,0.3);
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--caramel);
+}
+.topbar-customer {
+  font-size: 13px;
+  color: var(--sage);
+  padding: 4px 12px;
+  background: rgba(122,158,126,0.12);
+  border-radius: 99px;
+}
+
+/* ========================================================
+   PAGE LAYOUT
+   ======================================================== */
+.page-container { position: relative; z-index: 1; }
+.page { padding: 36px 40px; max-width: 1200px; margin: 0 auto; }
+.page.hidden { display: none; }
+.page.active { display: block; animation: pageIn 0.4s ease; }
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--gold);
+  margin-bottom: 28px;
+}
+.page-title-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--caramel);
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-label::after {
+  content: '';
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
+}
+
+/* ========================================================
+   ORDER PAGE — HERO
+   ======================================================== */
+.page-hero {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 40px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+}
+.hero-text h1 {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: 1.15;
+  color: var(--cream);
+}
+.hero-text h1 em {
+  color: var(--gold);
+  font-style: italic;
+}
+.hero-text p {
+  color: var(--text-muted);
+  font-family: var(--font-hand);
+  font-size: 18px;
+  margin-top: 6px;
+}
+.hero-deco {
+  font-size: 80px;
+  color: var(--caramel);
+  opacity: 0.15;
+  font-family: var(--font-display);
+  line-height: 1;
+  transform: rotate(15deg);
+}
+
+/* ========================================================
+   MOOD TEXT INPUT
+   ======================================================== */
+.mood-section { margin-bottom: 40px; }
+
+.mood-text-row {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 24px;
+}
+.mood-text-row input {
+  flex: 1;
+  padding: 14px 20px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.mood-text-row input:focus {
+  border-color: var(--caramel);
+  box-shadow: 0 0 0 3px rgba(200,129,58,0.15);
+}
+.mood-detected-badge {
+  padding: 8px 18px;
+  background: rgba(122,158,126,0.2);
+  border: 1px solid rgba(122,158,126,0.4);
+  border-radius: 99px;
+  font-size: 14px;
+  color: var(--sage);
+  white-space: nowrap;
+  animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ========================================================
+   MOOD GRID
+   ======================================================== */
+.mood-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.mood-card {
+  padding: 18px 14px;
+  background: linear-gradient(145deg, rgba(44,24,16,0.8), rgba(26,15,10,0.8));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  user-select: none;
+}
+.mood-card:hover {
+  transform: translateY(-4px) scale(1.03);
+  border-color: var(--caramel);
+  box-shadow: 0 12px 32px rgba(200,129,58,0.2);
+}
+.mood-card.selected {
+  background: linear-gradient(145deg, rgba(200,129,58,0.2), rgba(232,168,74,0.15));
+  border-color: var(--gold);
+  box-shadow: 0 8px 24px rgba(200,129,58,0.35);
+  transform: translateY(-2px) scale(1.04);
+}
+.mood-emoji { font-size: 32px; display: block; margin-bottom: 8px; }
+.mood-name {
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: var(--cream);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.mood-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* ========================================================
+   COMBO CARDS
+   ======================================================== */
+.combo-section { margin-bottom: 40px; animation: pageIn 0.4s ease; }
+
+.combo-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.combo-card {
+  background: linear-gradient(145deg, var(--bark), var(--roast));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.combo-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.combo-card.original::before { background: linear-gradient(90deg, var(--caramel), var(--gold)); }
+.combo-card.dietary::before  { background: linear-gradient(90deg, var(--sage), #a8d5b0); }
+.combo-card.general::before  { background: linear-gradient(90deg, var(--sky), #a0c8e8); }
+
+.combo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+  border-color: var(--caramel);
+}
+.combo-card.selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold), var(--shadow);
+}
+.combo-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+}
+.combo-tag.original { background: rgba(200,129,58,0.2); color: var(--caramel); }
+.combo-tag.dietary  { background: rgba(122,158,126,0.2); color: var(--sage); }
+.combo-tag.general  { background: rgba(107,158,196,0.2); color: var(--sky); }
+
+.combo-items { margin-bottom: 16px; }
+.combo-item-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.combo-item-row:last-child { border-bottom: none; }
+.combo-item-name {
+  font-size: 13px;
+  color: var(--text-main);
+  flex: 1;
+}
+.combo-item-type {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.combo-item-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gold);
+}
+.combo-total {
+  display: flex; justify-content: space-between;
+  font-weight: 600;
+  padding-top: 12px;
+}
+.combo-total span:first-child { color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.combo-total span:last-child { color: var(--gold); font-size: 18px; font-family: var(--font-display); }
+
+.combo-add-btn {
+  width: 100%; margin-top: 14px;
+  padding: 11px;
+  background: rgba(200,129,58,0.15);
+  border: 1px solid rgba(200,129,58,0.3);
+  border-radius: var(--radius-sm);
+  color: var(--caramel);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.combo-add-btn:hover { background: rgba(200,129,58,0.25); }
+
+/* ========================================================
+   CART
+   ======================================================== */
+.cart-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 780px) {
+  .cart-layout { grid-template-columns: 1fr; }
+}
+
+.cart-items {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-height: 120px;
+  overflow: hidden;
+}
+.cart-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+.cart-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  animation: slideIn 0.3s ease;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.cart-row:last-child { border-bottom: none; }
+.cart-item-info { flex: 1; }
+.cart-item-name { font-size: 14px; color: var(--text-main); font-weight: 500; }
+.cart-item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.cart-qty-ctrl {
+  display: flex; align-items: center; gap: 8px;
+}
+.qty-btn {
+  width: 28px; height: 28px;
+  background: rgba(200,129,58,0.15);
+  border: 1px solid rgba(200,129,58,0.2);
+  border-radius: 99px;
+  color: var(--caramel);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.qty-btn:hover { background: rgba(200,129,58,0.3); }
+.qty-num { font-size: 14px; font-weight: 600; min-width: 20px; text-align: center; }
+.cart-item-total { font-weight: 600; color: var(--gold); font-size: 14px; min-width: 60px; text-align: right; }
+.cart-remove {
+  color: var(--blush);
+  background: none; border: none;
+  cursor: pointer; font-size: 14px;
+  opacity: 0.6; transition: opacity 0.2s;
+}
+.cart-remove:hover { opacity: 1; }
+
+.cart-summary {
+  background: linear-gradient(145deg, var(--bark), var(--roast));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  position: sticky; top: 80px;
+}
+.summary-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--cream);
+  margin-bottom: 18px;
+}
+.summary-row {
+  display: flex; justify-content: space-between;
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.total-row {
+  font-weight: 700;
+  color: var(--gold) !important;
+  font-size: 16px !important;
+  padding-top: 12px !important;
+  border-bottom: none !important;
+  margin-bottom: 16px;
+}
+.total-row span { color: var(--gold); }
+.btn-checkout { margin-top: 16px; font-size: 16px; padding: 16px; letter-spacing: 0.5px; }
+.loyalty-banner {
+  background: rgba(232,168,74,0.12);
+  border: 1px solid rgba(232,168,74,0.3);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* ========================================================
+   MENU PAGE
+   ======================================================== */
+.menu-controls {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.menu-controls input,
+.menu-controls select {
+  padding: 10px 16px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  min-width: 140px;
+}
+.menu-controls input:focus,
+.menu-controls select:focus { border-color: var(--caramel); }
+.menu-controls select option { background: var(--roast); }
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.menu-item-card {
+  background: linear-gradient(145deg, rgba(44,24,16,0.9), rgba(26,15,10,0.9));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all 0.2s;
+  position: relative;
+}
+.menu-item-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  border-color: rgba(200,129,58,0.4);
+}
+.menu-item-card.sold-out { opacity: 0.5; }
+.item-cat-badge {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.item-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--cream);
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.item-kcal {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.item-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+.diet-tag {
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+}
+.diet-tag.vegan       { background: rgba(122,158,126,0.2); color: var(--sage); }
+.diet-tag.vegetarian  { background: rgba(122,158,126,0.15); color: #a0c8a4; }
+.diet-tag.gluten-free { background: rgba(200,180,100,0.2); color: #d4b86a; }
+.diet-tag.low-cal     { background: rgba(107,158,196,0.2); color: var(--sky); }
+
+.item-footer {
+  display: flex; justify-content: space-between; align-items: center;
+}
+.item-price {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--gold);
+}
+.item-stock-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 99px;
+}
+.stock-ok  { background: rgba(122,158,126,0.15); color: var(--sage); }
+.stock-low { background: rgba(232,168,74,0.15); color: var(--gold); }
+.stock-out { background: rgba(201,123,123,0.15); color: var(--blush); }
+.item-add-btn {
+  padding: 8px 14px;
+  background: rgba(200,129,58,0.15);
+  border: 1px solid rgba(200,129,58,0.3);
+  border-radius: var(--radius-sm);
+  color: var(--caramel);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.item-add-btn:hover { background: rgba(200,129,58,0.3); }
+.item-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.item-nut-btn {
+  background: none; border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 8px;
+  padding: 0;
+  text-decoration: underline dotted;
+  transition: color 0.15s;
+}
+.item-nut-btn:hover { color: var(--caramel); }
+
+/* ========================================================
+   SALES PAGE
+   ======================================================== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.stat-card {
+  background: linear-gradient(145deg, var(--bark), var(--roast));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::after {
+  content: attr(data-icon);
+  position: absolute;
+  right: 16px; bottom: 12px;
+  font-size: 40px;
+  opacity: 0.08;
+}
+.stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 8px; }
+.stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--gold); }
+.stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+.sales-chart-wrap {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+canvas { max-width: 100%; }
+
+.orders-table-wrap {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: auto;
+}
+.orders-table, .inventory-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 13px;
+}
+.orders-table th, .inventory-table th {
+  padding: 14px 18px;
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+.orders-table td, .inventory-table td {
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text-main);
+}
+.orders-table tr:last-child td, .inventory-table tr:last-child td { border-bottom: none; }
+.orders-table tr:hover td, .inventory-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* ========================================================
+   ANALYTICS PAGE
+   ======================================================== */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.analytics-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  margin-bottom: 28px;
+}
+.chart-card {
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.chart-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--latte);
+  margin-bottom: 18px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.customers-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.customer-card {
+  background: linear-gradient(145deg, var(--bark), var(--roast));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex; align-items: center; gap: 14px;
+}
+.customer-avatar {
+  width: 44px; height: 44px;
+  background: rgba(200,129,58,0.15);
+  border-radius: 99px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.customer-name { font-weight: 600; font-size: 14px; color: var(--cream); margin-bottom: 3px; }
+.customer-meta { font-size: 11px; color: var(--text-muted); }
+.customer-loyalty {
+  margin-left: auto;
+  font-size: 10px;
+  padding: 3px 8px;
+  background: rgba(232,168,74,0.15);
+  border-radius: 99px;
+  color: var(--gold);
+}
+
+/* ========================================================
+   INVENTORY PAGE
+   ======================================================== */
+.inventory-table-wrap {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: auto;
+}
+.stock-input {
+  width: 70px;
+  padding: 6px 10px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 13px;
+  text-align: center;
+}
+.update-btn {
+  padding: 6px 12px;
+  background: rgba(200,129,58,0.15);
+  border: 1px solid rgba(200,129,58,0.3);
+  border-radius: var(--radius-sm);
+  color: var(--caramel);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.update-btn:hover { background: rgba(200,129,58,0.25); }
+
+/* ========================================================
+   RECEIPT MODAL
+   ======================================================== */
+.receipt-box { background: var(--foam); color: var(--espresso); }
+.receipt-header { text-align: center; margin-bottom: 20px; border-bottom: 2px dashed rgba(44,24,16,0.2); padding-bottom: 16px; }
+.receipt-logo { font-size: 36px; }
+.receipt-header h2 { font-family: var(--font-display); font-size: 22px; color: var(--espresso); }
+.receipt-subtitle { font-family: var(--font-hand); color: var(--bark); font-size: 14px; }
+.receipt-box .modal-header { display: none; }
+#receiptContent { font-size: 13px; color: var(--espresso); }
+.receipt-line { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dotted rgba(44,24,16,0.15); }
+.receipt-line:last-child { border-bottom: none; }
+.receipt-total { font-weight: 700; font-size: 16px; margin-top: 10px; padding-top: 10px; border-top: 2px solid var(--bark); }
+.receipt-info { font-size: 11px; color: var(--bark); margin-bottom: 14px; opacity: 0.7; }
+.receipt-box .btn-secondary { color: var(--bark); border-color: var(--bark); }
+.receipt-box .btn-primary { background: linear-gradient(135deg, var(--bark), var(--espresso)); color: var(--cream); }
+
+/* ========================================================
+   NUTRITION MODAL
+   ======================================================== */
+.nut-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin-bottom: 16px;
+}
+.nut-item {
+  background: rgba(0,0,0,0.2);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  text-align: center;
+}
+.nut-val { font-size: 22px; font-weight: 700; color: var(--gold); font-family: var(--font-display); }
+.nut-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-top: 3px; }
+.nut-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ========================================================
+   CHATBOT
+   ======================================================== */
+.chatbot-fab {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  width: 56px; height: 56px;
+  background: linear-gradient(135deg, var(--caramel), var(--gold));
+  border: none; border-radius: 99px;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 8px 28px rgba(200,129,58,0.5);
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+}
+.chatbot-fab:hover { transform: scale(1.12) rotate(-8deg); }
+
+.chatbot-panel {
+  position: fixed;
+  bottom: 96px; right: 28px;
+  width: 340px;
+  height: 460px;
+  background: linear-gradient(145deg, var(--roast), var(--bark));
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  z-index: 500;
+  animation: slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.chatbot-panel.hidden { display: none; }
+
+.chatbot-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px;
+  background: rgba(0,0,0,0.3);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--gold);
+  border-bottom: 1px solid var(--border);
+}
+.chatbot-header button {
+  background: none; border: none;
+  color: var(--text-muted); cursor: pointer;
+  font-size: 16px; padding: 2px 6px;
+  border-radius: 4px; transition: all 0.15s;
+}
+.chatbot-header button:hover { background: rgba(255,255,255,0.1); color: var(--text-main); }
+
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+.chat-msg {
+  display: flex; gap: 8px; align-items: flex-end;
+}
+.chat-msg.user { flex-direction: row-reverse; }
+.chat-avatar { font-size: 20px; flex-shrink: 0; }
+.chat-bubble {
+  max-width: 75%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  animation: fadeIn 0.25s ease;
+}
+.chat-msg.bot .chat-bubble {
+  background: rgba(200,129,58,0.15);
+  border: 1px solid rgba(200,129,58,0.2);
+  color: var(--text-main);
+  border-bottom-left-radius: 4px;
+}
+.chat-msg.user .chat-bubble {
+  background: linear-gradient(135deg, var(--caramel), var(--gold));
+  color: var(--espresso);
+  border-bottom-right-radius: 4px;
+  font-weight: 500;
+}
+
+.chat-input-row {
+  display: flex; gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+.chat-input-row input {
+  flex: 1;
+  padding: 10px 14px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+}
+.chat-input-row input:focus { border-color: var(--caramel); }
+.chat-input-row button {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--caramel), var(--gold));
+  border: none; border-radius: 99px;
+  cursor: pointer; font-size: 14px;
+  color: var(--espresso);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.chat-input-row button:hover { transform: scale(1.1); }
+
+/* Typing indicator */
+.typing-bubble {
+  display: flex; align-items: center; gap: 5px;
+  padding: 14px 18px !important;
+}
+.dot {
+  width: 7px; height: 7px;
+  background: var(--caramel);
+  border-radius: 50%;
+  display: inline-block;
+  animation: dotBounce 1.2s infinite ease-in-out;
+}
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+  40%            { transform: scale(1);   opacity: 1;   }
+}
+
+/* ========================================================
+   UTILITIES
+   ======================================================== */
+.hidden { display: none !important; }
+
+.toast {
+  position: fixed;
+  bottom: 96px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: linear-gradient(135deg, var(--caramel), var(--gold));
+  color: var(--espresso);
+  padding: 12px 24px;
+  border-radius: 99px;
+  font-weight: 600;
+  font-size: 14px;
+  z-index: 2000;
+  animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  box-shadow: 0 8px 28px rgba(200,129,58,0.4);
+  pointer-events: none;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+/* Responsive tweaks */
+@media (max-width: 600px) {
+  .page { padding: 20px 16px; }
+  .topbar-nav { display: none; }
+  .chatbot-panel { width: calc(100vw - 32px); right: 16px; }
+}
+
+@media print {
+  body * { visibility: hidden; }
+  #receiptModal, #receiptModal * { visibility: visible; }
+  #receiptModal { position: fixed; inset: 0; background: white; z-index: 99999; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loader">
+  <div class="loader-inner">
+    <div class="loader-cup">☕</div>
+    <div class="loader-text">Mood Café & Restaurant</div>
+    <div class="loader-sub">Brewing your experience...</div>
+    <div class="loader-bar"><div class="loader-fill"></div></div>
+  </div>
+</div>
+
+<!-- STAFF LOGIN MODAL -->
+<div id="loginModal" class="modal-overlay hidden">
+  <div class="modal-box login-box">
+    <div class="modal-header">
+      <span class="modal-icon">☕</span>
+      <h2>Staff Login</h2>
+      <p>Welcome back to Mood Café & Restaurant</p>
+    </div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="loginUsername" placeholder="Enter username..." autocomplete="off"/>
+    </div>
+    <div class="form-group">
+      <label>Role</label>
+      <select id="loginRole">
+        <option value="cashier">Cashier</option>
+        <option value="manager">Manager</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <button class="btn-primary btn-full" onclick="doLogin()">Start Session</button>
+  </div>
+</div>
+
+<!-- CUSTOMER MODAL -->
+<div id="customerModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-icon">👤</span>
+      <h2>Customer Check-In</h2>
+    </div>
+    <div class="form-group">
+      <label>Customer Name (optional)</label>
+      <input type="text" id="customerNameInput" placeholder="Enter name for loyalty tracking..."/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeCustomerModal(true)">Skip (Guest)</button>
+      <button class="btn-primary" onclick="checkInCustomer()">Check In</button>
+    </div>
+  </div>
+</div>
+
+<!-- NUTRITION MODAL -->
+<div id="nutritionModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-icon">🥗</span>
+      <h2 id="nutModalName">Item Nutrition</h2>
+    </div>
+    <div id="nutModalContent"></div>
+    <button class="btn-primary btn-full" onclick="closeModal('nutritionModal')" style="margin-top:20px">Close</button>
+  </div>
+</div>
+
+<!-- RECEIPT MODAL -->
+<div id="receiptModal" class="modal-overlay hidden">
+  <div class="modal-box receipt-box">
+    <div class="receipt-header">
+      <div class="receipt-logo">☕</div>
+      <h2>G-4 Mood Café</h2>
+      <p class="receipt-subtitle">Official Receipt</p>
+    </div>
+    <div id="receiptContent"></div>
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn-secondary" onclick="closeModal('receiptModal')">Close</button>
+      <button class="btn-primary" onclick="printReceipt()">🖨️ Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHATBOT -->
+<div id="chatbotPanel" class="chatbot-panel hidden">
+  <div class="chatbot-header">
+    <span>🤖 MoodBot</span>
+    <button onclick="toggleChatbot()">✕</button>
+  </div>
+  <div id="chatMessages" class="chat-messages">
+    <div class="chat-msg bot">
+      <span class="chat-avatar">🤖</span>
+      <div class="chat-bubble">Hey! I'm MoodBot! Ask me about moods, dietary needs, recommendations, or anything café related! 😊</div>
+    </div>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter') sendChat()"/>
+    <button onclick="sendChat()">➤</button>
+  </div>
+</div>
+<button id="chatbotBtn" class="chatbot-fab" onclick="toggleChatbot()">🤖</button>
+
+<!-- MAIN APP -->
+<div id="app" class="hidden">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">☕</span>
+      <span class="topbar-brand">Mood Café & Restaurant</span>
+    </div>
+    <nav class="topbar-nav">
+      <button class="nav-btn active" data-page="order" onclick="navigateTo('order')">Order</button>
+      <button class="nav-btn" data-page="menu" onclick="navigateTo('menu')">Menu</button>
+      <button class="nav-btn" data-page="sales" onclick="navigateTo('sales')">Sales</button>
+      <button class="nav-btn manager-only" data-page="analytics" onclick="navigateTo('analytics')">Analytics</button>
+      <button class="nav-btn manager-only" data-page="inventory" onclick="navigateTo('inventory')">Inventory</button>
+    </nav>
+    <div class="topbar-right">
+      <div class="topbar-user">
+        <span id="topbarUsername">—</span>
+        <span id="topbarRole" class="role-badge">—</span>
+      </div>
+      <div id="topbarCustomer" class="topbar-customer hidden">
+        👤 <span id="topbarCustomerName">—</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- PAGES -->
+  <main class="page-container">
+
+    <!-- ===== ORDER PAGE ===== -->
+    <div id="page-order" class="page active">
+      <div class="page-hero">
+        <div class="hero-text">
+          <h1>How are you <em>feeling</em> today?</h1>
+          <p>Let your mood guide your meal.</p>
+        </div>
+        <div class="hero-deco">✦</div>
+      </div>
+
+      <!-- MOOD SELECTOR -->
+      <section class="mood-section">
+        <div class="section-label">Step 1 — Pick Your Mood</div>
+        <div class="mood-text-row">
+          <input type="text" id="moodTextInput" placeholder="Or describe how you feel... e.g. 'I feel tired and stressed'" oninput="detectMoodLive(this.value)"/>
+          <span id="moodDetected" class="mood-detected-badge hidden"></span>
+        </div>
+        <div class="mood-grid" id="moodGrid"></div>
+      </section>
+
+      <!-- COMBO OPTIONS -->
+      <section class="combo-section hidden" id="comboSection">
+        <div class="section-label">Step 2 — Choose Your Combo</div>
+        <div class="combo-cards" id="comboCards"></div>
+      </section>
+
+      <!-- ORDER CART -->
+      <section class="cart-section" id="cartSection">
+        <div class="section-label">Your Order</div>
+        <div class="cart-layout">
+          <div class="cart-items" id="cartItems">
+            <div class="cart-empty">🛒 Your cart is empty.<br/><small>Pick a mood combo or add items from the menu.</small></div>
+          </div>
+          <div class="cart-summary">
+            <div class="summary-title">Order Summary</div>
+            <div class="summary-row"><span>Subtotal</span><span id="cartSubtotal">₱0.00</span></div>
+            <div class="summary-row"><span>Tax (12% VAT)</span><span id="cartTax">₱0.00</span></div>
+            <div class="summary-row total-row"><span>Total</span><span id="cartTotal">₱0.00</span></div>
+            <div id="loyaltyBanner" class="loyalty-banner hidden">⭐ Loyalty member — free size upgrade!</div>
+            <button class="btn-primary btn-full btn-checkout" id="checkoutBtn" onclick="checkout()" disabled>Place Order</button>
+            <button class="btn-ghost btn-full" onclick="clearCart()">Clear Cart</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===== MENU PAGE ===== -->
+    <div id="page-menu" class="page hidden">
+      <div class="page-title-row">
+        <h2 class="page-title">Full Menu</h2>
+        <div class="menu-controls">
+          <input type="text" id="menuSearch" placeholder="Search menu..." oninput="filterMenu()"/>
+          <select id="dietFilter" onchange="filterMenu()">
+            <option value="">All Items</option>
+            <option value="vegan">🌱 Vegan</option>
+            <option value="vegetarian">🥦 Vegetarian</option>
+            <option value="gluten-free">🌾 Gluten-Free</option>
+            <option value="low-cal">🔥 Low-Cal</option>
+          </select>
+          <select id="categoryFilter" onchange="filterMenu()">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+      </div>
+      <div class="menu-grid" id="menuGrid"></div>
+    </div>
+
+    <!-- ===== SALES PAGE ===== -->
+    <div id="page-sales" class="page hidden">
+      <h2 class="page-title">Sales Report</h2>
+      <div class="stats-grid" id="statsGrid"></div>
+      <div class="sales-chart-wrap">
+        <div class="section-label">Monthly Revenue</div>
+        <canvas id="salesChart" height="200"></canvas>
+      </div>
+      <div class="section-label" style="margin-top:32px">Recent Orders</div>
+      <div class="orders-table-wrap">
+        <table class="orders-table" id="ordersTable">
+          <thead><tr><th>Date</th><th>Items</th><th>Total</th><th>Customer</th></tr></thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== ANALYTICS PAGE ===== -->
+    <div id="page-analytics" class="page hidden">
+      <h2 class="page-title">Analytics Dashboard</h2>
+      <div class="analytics-grid" id="analyticsGrid"></div>
+      <div class="analytics-charts">
+        <div class="chart-card">
+          <div class="chart-title">Top Items by Orders</div>
+          <canvas id="topItemsChart" height="260"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Orders by Mood</div>
+          <canvas id="moodChart" height="260"></canvas>
+        </div>
+      </div>
+      <div class="section-label" style="margin-top:32px">Customer Profiles</div>
+      <div class="customers-list" id="customersList"></div>
+    </div>
+
+    <!-- ===== INVENTORY PAGE ===== -->
+    <div id="page-inventory" class="page hidden">
+      <div class="page-title-row">
+        <h2 class="page-title">Inventory</h2>
+        <button class="btn-primary" onclick="restockAll()">Restock All Items</button>
+      </div>
+      <div class="inventory-table-wrap">
+        <table class="inventory-table" id="inventoryTable">
+          <thead><tr><th>ID</th><th>Item</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="inventoryBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>// ============================================================
+//  G-4 MOOD CAFÉ — POS System JavaScript
+//  Full application logic: data, state, UI, charts
+// ============================================================
+
+// ============================================================
+//  DATA — MENU
+// ============================================================
+
+const MENU = [
+  // BURGERS
+  {id:101,name:"Classic Cheeseburger",cat:"Burgers",price:79,stock:20,cal:520,prot:28,carbs:42,fat:22,tags:[]},
+  {id:102,name:"Cheesy Bacon Burger",cat:"Burgers",price:99,stock:15,cal:680,prot:35,carbs:45,fat:32,tags:[]},
+  {id:103,name:"Mushroom Swiss Burger",cat:"Burgers",price:89,stock:15,cal:560,prot:26,carbs:44,fat:24,tags:["vegetarian"]},
+  {id:104,name:"BBQ Smoky Burger",cat:"Burgers",price:109,stock:10,cal:720,prot:38,carbs:48,fat:34,tags:[]},
+  {id:105,name:"Veggie Quinoa Burger",cat:"Burgers",price:95,stock:12,cal:410,prot:18,carbs:52,fat:14,tags:["vegan","vegetarian","low-cal"]},
+  {id:106,name:"Spicy Sriracha Burger",cat:"Burgers",price:109,stock:8,cal:610,prot:30,carbs:44,fat:26,tags:[]},
+  // SANDWICHES
+  {id:201,name:"BLT Sandwich",cat:"Sandwiches",price:65,stock:20,cal:420,prot:20,carbs:38,fat:18,tags:[]},
+  {id:202,name:"Egg & Cheese Sandwich",cat:"Sandwiches",price:55,stock:25,cal:380,prot:18,carbs:36,fat:16,tags:["vegetarian"]},
+  {id:203,name:"Butter Toast",cat:"Sandwiches",price:35,stock:30,cal:220,prot:5,carbs:34,fat:9,tags:["vegetarian"]},
+  {id:204,name:"Club Sandwich",cat:"Sandwiches",price:85,stock:15,cal:490,prot:28,carbs:42,fat:20,tags:[]},
+  {id:205,name:"Avocado Toast",cat:"Sandwiches",price:79,stock:18,cal:310,prot:10,carbs:32,fat:16,tags:["vegan","vegetarian","low-cal"]},
+  {id:206,name:"Tuna Melt Sandwich",cat:"Sandwiches",price:85,stock:12,cal:450,prot:30,carbs:36,fat:18,tags:[]},
+  // PASTA
+  {id:301,name:"Spaghetti Bolognese",cat:"Pasta",price:95,stock:15,cal:620,prot:30,carbs:72,fat:18,tags:[]},
+  {id:302,name:"Creamy Carbonara",cat:"Pasta",price:105,stock:12,cal:710,prot:28,carbs:70,fat:28,tags:[]},
+  {id:303,name:"Pesto Pasta",cat:"Pasta",price:90,stock:10,cal:540,prot:18,carbs:68,fat:20,tags:["vegetarian"]},
+  {id:304,name:"Aglio e Olio",cat:"Pasta",price:85,stock:12,cal:480,prot:14,carbs:70,fat:16,tags:["vegan","vegetarian"]},
+  {id:305,name:"Rose Sauce Pasta",cat:"Pasta",price:100,stock:10,cal:580,prot:20,carbs:72,fat:20,tags:["vegetarian"]},
+  // PIZZA
+  {id:401,name:"Overload Pizza (6 slices)",cat:"Pizza",price:149,stock:10,cal:820,prot:36,carbs:88,fat:30,tags:[]},
+  {id:402,name:"Margherita Pizza (6 slices)",cat:"Pizza",price:129,stock:10,cal:680,prot:24,carbs:84,fat:22,tags:["vegetarian"]},
+  {id:403,name:"BBQ Chicken Pizza (6 slices)",cat:"Pizza",price:159,stock:8,cal:860,prot:40,carbs:86,fat:30,tags:[]},
+  {id:404,name:"Vegan Garden Pizza (6 slices)",cat:"Pizza",price:139,stock:8,cal:560,prot:18,carbs:80,fat:16,tags:["vegan","vegetarian","low-cal"]},
+  // SNACKS
+  {id:501,name:"French Fries",cat:"Snacks",price:45,stock:40,cal:340,prot:4,carbs:48,fat:16,tags:["vegan","vegetarian","gluten-free"]},
+  {id:502,name:"Onion Rings",cat:"Snacks",price:50,stock:30,cal:380,prot:5,carbs:50,fat:18,tags:["vegetarian"]},
+  {id:503,name:"Donuts (2 pcs)",cat:"Snacks",price:35,stock:25,cal:420,prot:6,carbs:58,fat:18,tags:["vegetarian"]},
+  {id:504,name:"Choco Chip Cookies (3 pcs)",cat:"Snacks",price:40,stock:20,cal:380,prot:5,carbs:52,fat:16,tags:["vegetarian"]},
+  {id:505,name:"Mixed Fruit Bowl",cat:"Snacks",price:55,stock:20,cal:120,prot:2,carbs:28,fat:0,tags:["vegan","vegetarian","gluten-free","low-cal"]},
+  {id:506,name:"Cheese Nachos",cat:"Snacks",price:60,stock:18,cal:420,prot:10,carbs:52,fat:18,tags:["vegetarian"]},
+  {id:507,name:"Edamame (salted)",cat:"Snacks",price:50,stock:15,cal:190,prot:17,carbs:14,fat:8,tags:["vegan","vegetarian","gluten-free","low-cal"]},
+  // BREAKFAST
+  {id:601,name:"Bacon & Eggs",cat:"Breakfast",price:75,stock:15,cal:520,prot:32,carbs:12,fat:38,tags:["gluten-free"]},
+  {id:602,name:"Pancake Stack (3 pcs)",cat:"Breakfast",price:65,stock:20,cal:480,prot:12,carbs:72,fat:14,tags:["vegetarian"]},
+  {id:603,name:"Full English Breakfast",cat:"Breakfast",price:120,stock:10,cal:780,prot:42,carbs:48,fat:40,tags:[]},
+  {id:604,name:"Overnight Oats Bowl",cat:"Breakfast",price:70,stock:14,cal:320,prot:12,carbs:52,fat:8,tags:["vegan","vegetarian","gluten-free","low-cal"]},
+  {id:605,name:"Granola & Yogurt Parfait",cat:"Breakfast",price:75,stock:12,cal:360,prot:14,carbs:54,fat:8,tags:["vegetarian","low-cal"]},
+  // HOT DRINKS
+  {id:701,name:"Americano",cat:"Hot Drinks",price:60,stock:50,cal:15,prot:1,carbs:2,fat:0,tags:["vegan","gluten-free","low-cal"]},
+  {id:702,name:"Cappuccino",cat:"Hot Drinks",price:70,stock:50,cal:110,prot:6,carbs:12,fat:4,tags:["vegetarian","gluten-free"]},
+  {id:703,name:"Caramel Latte",cat:"Hot Drinks",price:75,stock:50,cal:180,prot:6,carbs:28,fat:5,tags:["vegetarian","gluten-free"]},
+  {id:704,name:"Vanilla Latte",cat:"Hot Drinks",price:75,stock:50,cal:170,prot:6,carbs:26,fat:5,tags:["vegetarian","gluten-free"]},
+  {id:705,name:"Hot Matcha",cat:"Hot Drinks",price:70,stock:50,cal:130,prot:4,carbs:18,fat:4,tags:["vegetarian","gluten-free"]},
+  {id:706,name:"Hot Chocolate",cat:"Hot Drinks",price:65,stock:50,cal:200,prot:6,carbs:32,fat:6,tags:["vegetarian","gluten-free"]},
+  {id:707,name:"Chamomile Tea",cat:"Hot Drinks",price:55,stock:40,cal:5,prot:0,carbs:1,fat:0,tags:["vegan","gluten-free","low-cal"]},
+  {id:708,name:"Oat Milk Latte",cat:"Hot Drinks",price:85,stock:35,cal:140,prot:4,carbs:20,fat:4,tags:["vegan","vegetarian","gluten-free"]},
+  // COLD DRINKS
+  {id:801,name:"Iced Americano",cat:"Cold Drinks",price:65,stock:50,cal:20,prot:1,carbs:3,fat:0,tags:["vegan","gluten-free","low-cal"]},
+  {id:802,name:"Iced Caramel Latte",cat:"Cold Drinks",price:80,stock:50,cal:200,prot:6,carbs:30,fat:5,tags:["vegetarian","gluten-free"]},
+  {id:803,name:"Iced Vanilla Latte",cat:"Cold Drinks",price:80,stock:50,cal:190,prot:6,carbs:28,fat:5,tags:["vegetarian","gluten-free"]},
+  {id:804,name:"Matcha Latte",cat:"Cold Drinks",price:80,stock:50,cal:150,prot:5,carbs:20,fat:5,tags:["vegetarian","gluten-free"]},
+  {id:805,name:"Mocha Latte",cat:"Cold Drinks",price:75,stock:50,cal:220,prot:6,carbs:30,fat:7,tags:["vegetarian","gluten-free"]},
+  {id:806,name:"Espresso Latte",cat:"Cold Drinks",price:70,stock:50,cal:120,prot:5,carbs:14,fat:4,tags:["vegetarian","gluten-free"]},
+  {id:807,name:"Iced Tea",cat:"Cold Drinks",price:40,stock:60,cal:80,prot:0,carbs:20,fat:0,tags:["vegan","gluten-free","low-cal"]},
+  {id:808,name:"Strawberry Smoothie",cat:"Cold Drinks",price:85,stock:30,cal:210,prot:3,carbs:48,fat:1,tags:["vegan","vegetarian","gluten-free","low-cal"]},
+  {id:809,name:"Mango Lassi",cat:"Cold Drinks",price:90,stock:25,cal:240,prot:6,carbs:46,fat:3,tags:["vegetarian","gluten-free"]},
+  {id:810,name:"Cold Brew Coffee",cat:"Cold Drinks",price:95,stock:20,cal:30,prot:1,carbs:4,fat:0,tags:["vegan","gluten-free","low-cal"]},
+  {id:811,name:"Lavender Lemonade",cat:"Cold Drinks",price:85,stock:22,cal:140,prot:0,carbs:36,fat:0,tags:["vegan","gluten-free","low-cal"]},
+];
+
+// ============================================================
+//  DATA — MOODS
+// ============================================================
+
+const MOODS = [
+  {name:"Happy",emoji:"😊",desc:"You're glowing! Celebrate with something fun.",
+   original:{foodId:101,drinkId:807},dietary:{foodId:505,drinkId:808},general:{foodId:501,drinkId:801}},
+  {name:"Tired",emoji:"😴",desc:"You need fuel. We've got you.",
+   original:{foodId:601,drinkId:801},dietary:{foodId:604,drinkId:810},general:{foodId:603,drinkId:701}},
+  {name:"Sad",emoji:"😢",desc:"Comfort is on its way. Big hug in every bite.",
+   original:{foodId:503,drinkId:703},dietary:{foodId:605,drinkId:707},general:{foodId:504,drinkId:706}},
+  {name:"Calm",emoji:"😌",desc:"Breathe. Here's something serene for you.",
+   original:{foodId:504,drinkId:804},dietary:{foodId:507,drinkId:801},general:{foodId:205,drinkId:811}},
+  {name:"Heartbroken",emoji:"💔",desc:"Pizza heals everything. We promise.",
+   original:{foodId:401,drinkId:804},dietary:{foodId:404,drinkId:808},general:{foodId:403,drinkId:805}},
+  {name:"Anxious",emoji:"😰",desc:"Slow down. Something warm and gentle for you.",
+   original:{foodId:203,drinkId:705},dietary:{foodId:604,drinkId:707},general:{foodId:202,drinkId:701}},
+  {name:"Depressed",emoji:"😞",desc:"You matter. Let us take care of you today.",
+   original:{foodId:501,drinkId:805},dietary:{foodId:505,drinkId:810},general:{foodId:301,drinkId:706}},
+  {name:"Excited",emoji:"🤩",desc:"Big energy! Let's match it with something bold.",
+   original:{foodId:104,drinkId:802},dietary:{foodId:105,drinkId:808},general:{foodId:403,drinkId:806}},
+  {name:"Focused",emoji:"🧠",desc:"Brain fuel incoming. Stay sharp.",
+   original:{foodId:303,drinkId:708},dietary:{foodId:304,drinkId:707},general:{foodId:302,drinkId:703}},
+  {name:"Adventurous",emoji:"🌶️",desc:"You're feeling bold — let's spice it up!",
+   original:{foodId:106,drinkId:809},dietary:{foodId:501,drinkId:811},general:{foodId:401,drinkId:802}},
+];
+
+// ============================================================
+//  STATE
+// ============================================================
+
+let staff = {username:"", role:""};
+let customer = {name:"Guest", visits:0, totalSpent:0};
+let cart = [];           // [{item, qty, unitPrice, customNote}]
+let orderHistory = [];   // [{date, items, total, customer}]
+let customers = [];      // [{name, visits, totalSpent, lastVisit}]
+let menuStock = {};      // {id: stock}
+let moodStats = {};      // {moodName: count}
+let selectedMoodIdx = null;
+
+// Seed from localStorage if available
+function loadState() {
+  const saved = localStorage.getItem('moodcafe_state');
+  if (saved) {
+    try {
+      const s = JSON.parse(saved);
+      if (s.orderHistory) orderHistory = s.orderHistory;
+      if (s.customers)    customers    = s.customers;
+      if (s.menuStock)    menuStock    = s.menuStock;
+      if (s.moodStats)    moodStats    = s.moodStats;
+    } catch(e) {}
+  }
+  // Sync stock into MENU
+  MENU.forEach(item => {
+    if (menuStock[item.id] !== undefined) item.stock = menuStock[item.id];
+  });
+}
+
+function saveState() {
+  MENU.forEach(item => { menuStock[item.id] = item.stock; });
+  localStorage.setItem('moodcafe_state', JSON.stringify({
+    orderHistory, customers, menuStock, moodStats
+  }));
+}
+
+// ============================================================
+//  HELPERS
+// ============================================================
+
+function findItem(id)  { return MENU.find(m => m.id === id); }
+function formatPeso(n) { return '₱' + Number(n).toFixed(2); }
+function today()       { return new Date().toLocaleDateString('en-CA'); } // YYYY-MM-DD
+function nowTime()     { return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
+
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(()=>t.remove(), 400); }, 2200);
+}
+
+// ============================================================
+//  LOADER + LOGIN
+// ============================================================
+
+window.onload = () => {
+  loadState();
+  setTimeout(() => {
+    const loader = document.getElementById('loader');
+    loader.classList.add('fade-out');
+    setTimeout(() => {
+      loader.style.display = 'none';
+      document.getElementById('loginModal').classList.remove('hidden');
+    }, 600);
+  }, 2000);
+};
+
+function doLogin() {
+  const u = document.getElementById('loginUsername').value.trim();
+  const r = document.getElementById('loginRole').value;
+  if (!u) { showToast('Please enter a username'); return; }
+  staff = {username: u, role: r};
+  document.getElementById('topbarUsername').textContent = u;
+  document.getElementById('topbarRole').textContent = r.charAt(0).toUpperCase() + r.slice(1);
+  closeModal('loginModal');
+  // Show manager-only tabs
+  if (r === 'manager' || r === 'admin') {
+    document.querySelectorAll('.manager-only').forEach(el => el.style.display = '');
+  } else {
+    document.querySelectorAll('.manager-only').forEach(el => el.style.display = 'none');
+  }
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('customerModal').classList.remove('hidden');
+  initMoodGrid();
+  renderMenuPage();
+}
+
+// ============================================================
+//  CUSTOMER CHECK-IN
+// ============================================================
+
+function checkInCustomer() {
+  const name = document.getElementById('customerNameInput').value.trim() || 'Guest';
+  let existing = customers.find(c => c.name.toLowerCase() === name.toLowerCase());
+  if (!existing) {
+    existing = {name, visits:0, totalSpent:0, lastVisit: today()};
+    customers.push(existing);
+    showToast('New customer registered: ' + name);
+  } else {
+    showToast('Welcome back, ' + name + '! Visits: ' + existing.visits);
+  }
+  customer = existing;
+  const topCust = document.getElementById('topbarCustomer');
+  const topName = document.getElementById('topbarCustomerName');
+  topCust.classList.remove('hidden');
+  topName.textContent = name;
+  closeModal('customerModal');
+  // Loyalty banner
+  if (customer.visits >= 10) {
+    document.getElementById('loyaltyBanner').classList.remove('hidden');
+  }
+}
+
+function closeCustomerModal(guest) {
+  customer = {name:'Guest', visits:0, totalSpent:0};
+  closeModal('customerModal');
+}
+
+// ============================================================
+//  NAVIGATION
+// ============================================================
+
+function navigateTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.remove('hidden');
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelector(`[data-page="${page}"]`).classList.add('active');
+
+  if (page === 'sales')     renderSalesPage();
+  if (page === 'analytics') renderAnalyticsPage();
+  if (page === 'inventory') renderInventoryPage();
+}
+
+// ============================================================
+//  MOOD GRID
+// ============================================================
+
+function initMoodGrid() {
+  const grid = document.getElementById('moodGrid');
+  grid.innerHTML = '';
+  MOODS.forEach((m, i) => {
+    const card = document.createElement('div');
+    card.className = 'mood-card';
+    card.dataset.idx = i;
+    card.innerHTML = `
+      <span class="mood-emoji">${m.emoji}</span>
+      <div class="mood-name">${m.name}</div>
+      <div class="mood-desc">${m.desc}</div>
+    `;
+    card.onclick = () => selectMood(i);
+    grid.appendChild(card);
+  });
+}
+
+function selectMood(idx) {
+  selectedMoodIdx = idx;
+  document.querySelectorAll('.mood-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`.mood-card[data-idx="${idx}"]`).classList.add('selected');
+  renderCombos(idx);
+  document.getElementById('comboSection').classList.remove('hidden');
+  document.getElementById('comboSection').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function detectMoodLive(val) {
+  const badge = document.getElementById('moodDetected');
+  if (!val.trim()) { badge.classList.add('hidden'); return; }
+  const idx = detectMoodFromText(val);
+  if (idx >= 0) {
+    badge.textContent = MOODS[idx].emoji + ' ' + MOODS[idx].name + ' detected!';
+    badge.classList.remove('hidden');
+    selectMood(idx);
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+function detectMoodFromText(text) {
+  const s = text.toLowerCase();
+  const kw = [
+    ['happy','great','joy','good','wonderful','amazing','glad'],
+    ['tired','sleepy','exhausted','drained','fatigue','drowsy'],
+    ['sad','unhappy','cry','miss','gloomy','upset','down'],
+    ['calm','chill','peaceful','relax','serene','tranquil'],
+    ['heartbroken','broke','hurt','lonely','heartbreak','miss you'],
+    ['anxious','nervous','stressed','worry','panic','tense'],
+    ['depressed','hopeless','empty','numb','despair'],
+    ['excited','hyper','pumped','energy','enthusiastic','thrilled'],
+    ['focus','study','work','concentrate','productive','think'],
+    ['adventurous','bold','spicy','brave','wild','daring'],
+  ];
+  for (let i = 0; i < kw.length; i++) {
+    if (kw[i].some(w => s.includes(w))) return i;
+  }
+  return -1;
+}
+
+// ============================================================
+//  COMBO RENDERING
+// ============================================================
+
+function renderCombos(moodIdx) {
+  const mood = MOODS[moodIdx];
+  const wrap = document.getElementById('comboCards');
+  wrap.innerHTML = '';
+
+  const options = [
+    {key:'original', label:'Original', icon:'⭐', combo: mood.original},
+    {key:'dietary',  label:'Dietary',  icon:'🌱', combo: mood.dietary},
+    {key:'general',  label:'General',  icon:'🍽️', combo: mood.general},
+  ];
+
+  options.forEach(opt => {
+    const food  = findItem(opt.combo.foodId);
+    const drink = findItem(opt.combo.drinkId);
+    const total = (food ? food.price : 0) + (drink ? drink.price : 0);
+
+    const card = document.createElement('div');
+    card.className = `combo-card ${opt.key}`;
+    card.innerHTML = `
+      <div class="combo-tag ${opt.key}">${opt.icon} ${opt.label}</div>
+      <div class="combo-items">
+        ${food  ? `<div class="combo-item-row">
+          <div><div class="combo-item-name">${food.name}</div>
+          <div class="combo-item-type">Food · ${food.cal} kcal</div></div>
+          <div class="combo-item-price">${formatPeso(food.price)}</div>
+        </div>` : ''}
+        ${drink ? `<div class="combo-item-row">
+          <div><div class="combo-item-name">${drink.name}</div>
+          <div class="combo-item-type">Drink · ${drink.cal} kcal</div></div>
+          <div class="combo-item-price">${formatPeso(drink.price)}</div>
+        </div>` : ''}
+      </div>
+      <div class="combo-total">
+        <span>Combo Total</span>
+        <span>${formatPeso(total)}</span>
+      </div>
+      <button class="combo-add-btn" onclick="addComboToCart(${moodIdx},'${opt.key}')">
+        + Add This Combo
+      </button>
+    `;
+    wrap.appendChild(card);
+  });
+}
+
+function addComboToCart(moodIdx, optKey) {
+  const mood = MOODS[moodIdx];
+  const combo = mood[optKey];
+  const food  = findItem(combo.foodId);
+  const drink = findItem(combo.drinkId);
+  let added = false;
+  if (food  && food.stock  > 0) { addToCart(food.id,  1, `${mood.name} Combo — ${optKey}`); added = true; }
+  if (drink && drink.stock > 0) { addToCart(drink.id, 1, `${mood.name} Combo — ${optKey}`); added = true; }
+  if (!added) { showToast('Items in this combo are sold out!'); return; }
+
+  // Track mood stats
+  moodStats[mood.name] = (moodStats[mood.name] || 0) + 1;
+  showToast(`${mood.emoji} ${mood.name} combo added to cart!`);
+}
+
+// ============================================================
+//  CART
+// ============================================================
+
+function addToCart(itemId, qty=1, customNote='') {
+  const item = findItem(itemId);
+  if (!item || item.stock <= 0) { showToast('Sorry, this item is sold out!'); return; }
+  const existing = cart.find(c => c.itemId === itemId && c.customNote === customNote);
+  if (existing) {
+    existing.qty = Math.min(existing.qty + qty, item.stock);
+  } else {
+    cart.push({itemId, qty, unitPrice: item.price, customNote, name: item.name});
+  }
+  renderCart();
+  // Enable checkout button
+  document.getElementById('checkoutBtn').disabled = cart.length === 0;
+}
+
+function updateCartQty(itemId, customNote, delta) {
+  const idx = cart.findIndex(c => c.itemId === itemId && c.customNote === customNote);
+  if (idx === -1) return;
+  const item = findItem(itemId);
+  cart[idx].qty = Math.max(0, Math.min(cart[idx].qty + delta, item ? item.stock : 99));
+  if (cart[idx].qty === 0) cart.splice(idx, 1);
+  renderCart();
+  document.getElementById('checkoutBtn').disabled = cart.length === 0;
+}
+
+function removeFromCart(itemId, customNote) {
+  cart = cart.filter(c => !(c.itemId === itemId && c.customNote === customNote));
+  renderCart();
+  document.getElementById('checkoutBtn').disabled = cart.length === 0;
+}
+
+function clearCart() {
+  cart = []; renderCart();
+  document.getElementById('checkoutBtn').disabled = true;
+}
+
+function renderCart() {
+  const wrap = document.getElementById('cartItems');
+  if (cart.length === 0) {
+    wrap.innerHTML = '<div class="cart-empty">🛒 Your cart is empty.<br/><small>Pick a mood combo or add items from the menu.</small></div>';
+    updateCartTotals(0, 0, 0);
+    return;
+  }
+  wrap.innerHTML = '';
+  let subtotal = 0;
+  cart.forEach(c => {
+    const lineTotal = c.qty * c.unitPrice;
+    subtotal += lineTotal;
+    const row = document.createElement('div');
+    row.className = 'cart-row';
+    row.innerHTML = `
+      <div class="cart-item-info">
+        <div class="cart-item-name">${c.name}</div>
+        ${c.customNote ? `<div class="cart-item-sub">${c.customNote}</div>` : ''}
+      </div>
+      <div class="cart-qty-ctrl">
+        <button class="qty-btn" onclick="updateCartQty(${c.itemId},'${c.customNote}',-1)">−</button>
+        <span class="qty-num">${c.qty}</span>
+        <button class="qty-btn" onclick="updateCartQty(${c.itemId},'${c.customNote}',1)">+</button>
+      </div>
+      <div class="cart-item-total">${formatPeso(lineTotal)}</div>
+      <button class="cart-remove" onclick="removeFromCart(${c.itemId},'${c.customNote}')">✕</button>
+    `;
+    wrap.appendChild(row);
+  });
+  const tax = subtotal * 0.12;
+  const total = subtotal + tax;
+  updateCartTotals(subtotal, tax, total);
+}
+
+function updateCartTotals(sub, tax, total) {
+  document.getElementById('cartSubtotal').textContent = formatPeso(sub);
+  document.getElementById('cartTax').textContent      = formatPeso(tax);
+  document.getElementById('cartTotal').textContent    = formatPeso(total);
+}
+
+// ============================================================
+//  CHECKOUT
+// ============================================================
+
+function checkout() {
+  if (cart.length === 0) return;
+  const subtotal = cart.reduce((s,c) => s + c.qty * c.unitPrice, 0);
+  const tax   = subtotal * 0.12;
+  const total = subtotal + tax;
+
+  // Deduct stock
+  cart.forEach(c => {
+    const item = findItem(c.itemId);
+    if (item) item.stock = Math.max(0, item.stock - c.qty);
+  });
+
+  // Record order
+  const order = {
+    date: today(), time: nowTime(),
+    items: cart.map(c => ({...c})),
+    subtotal, tax, total,
+    customer: customer.name,
+    staff: staff.username
+  };
+  orderHistory.push(order);
+
+  // Update customer
+  if (customer.name !== 'Guest') {
+    const cust = customers.find(c => c.name === customer.name);
+    if (cust) {
+      cust.visits++;
+      cust.totalSpent += total;
+      cust.lastVisit = today();
+      customer = {...cust};
+      if (customer.visits >= 10) {
+        document.getElementById('loyaltyBanner').classList.remove('hidden');
+      }
+    }
+  }
+
+  saveState();
+  showReceipt(order);
+  cart = [];
+  renderCart();
+  document.getElementById('checkoutBtn').disabled = true;
+}
+
+// ============================================================
+//  RECEIPT
+// ============================================================
+
+function showReceipt(order) {
+  const content = document.getElementById('receiptContent');
+  const itemsHtml = order.items.map(c =>
+    `<div class="receipt-line"><span>${c.name} ×${c.qty}</span><span>${formatPeso(c.unitPrice * c.qty)}</span></div>`
+  ).join('');
+
+  content.innerHTML = `
+    <div class="receipt-info">Date: ${order.date}  ${order.time}  |  Cashier: ${order.staff}</div>
+    ${order.customer !== 'Guest' ? `<div class="receipt-info">Customer: ${order.customer}</div>` : ''}
+    <div style="margin-bottom:10px">${itemsHtml}</div>
+    <div class="receipt-line"><span>Subtotal</span><span>${formatPeso(order.subtotal)}</span></div>
+    <div class="receipt-line"><span>VAT (12%)</span><span>${formatPeso(order.tax)}</span></div>
+    <div class="receipt-line receipt-total"><span>TOTAL</span><span>${formatPeso(order.total)}</span></div>
+    <div style="text-align:center;margin-top:14px;font-family:'Caveat',cursive;font-size:16px;opacity:0.6">
+      Thank you for visiting! Come back soon ☕
+    </div>
+  `;
+  document.getElementById('receiptModal').classList.remove('hidden');
+}
+
+function printReceipt() { window.print(); }
+
+// ============================================================
+//  MENU PAGE
+// ============================================================
+
+function renderMenuPage() {
+  // Populate category filter
+  const cats = [...new Set(MENU.map(m => m.cat))];
+  const catSel = document.getElementById('categoryFilter');
+  catSel.innerHTML = '<option value="">All Categories</option>';
+  cats.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    catSel.appendChild(opt);
+  });
+  filterMenu();
+}
+
+function filterMenu() {
+  const search = document.getElementById('menuSearch').value.toLowerCase();
+  const diet   = document.getElementById('dietFilter').value;
+  const cat    = document.getElementById('categoryFilter').value;
+
+  const filtered = MENU.filter(item => {
+    if (search && !item.name.toLowerCase().includes(search)) return false;
+    if (diet   && !item.tags.includes(diet))                 return false;
+    if (cat    && item.cat !== cat)                          return false;
+    return true;
+  });
+
+  const grid = document.getElementById('menuGrid');
+  grid.innerHTML = '';
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div style="color:var(--text-muted);padding:40px;text-align:center;grid-column:1/-1">No items found.</div>';
+    return;
+  }
+  filtered.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'menu-item-card' + (item.stock === 0 ? ' sold-out' : '');
+    const stockLabel = item.stock === 0 ? '<span class="item-stock-badge stock-out">Sold Out</span>'
+                     : item.stock < 5   ? `<span class="item-stock-badge stock-low">Low (${item.stock})</span>`
+                     :                    `<span class="item-stock-badge stock-ok">In Stock</span>`;
+    const tagsHtml = item.tags.map(t => `<span class="diet-tag ${t}">${t}</span>`).join('');
+
+    card.innerHTML = `
+      <div class="item-cat-badge">${item.cat}</div>
+      <div class="item-name">${item.name}</div>
+      <div class="item-kcal">${item.cal} kcal · ${item.prot}g protein</div>
+      ${tagsHtml ? `<div class="item-tags">${tagsHtml}</div>` : ''}
+      <div class="item-footer">
+        <div class="item-price">${formatPeso(item.price)}</div>
+        ${stockLabel}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+        <button class="item-add-btn" onclick="addToCart(${item.id})" ${item.stock===0?'disabled':''}>+ Add to Cart</button>
+        <button class="item-nut-btn" onclick="showNutrition(${item.id})">nutrition ↗</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function showNutrition(id) {
+  const item = findItem(id);
+  if (!item) return;
+  document.getElementById('nutModalName').textContent = item.name;
+  const tagsHtml = item.tags.map(t => `<span class="diet-tag ${t}">${t}</span>`).join('');
+  document.getElementById('nutModalContent').innerHTML = `
+    <div class="nut-grid">
+      <div class="nut-item"><div class="nut-val">${item.cal}</div><div class="nut-label">Calories</div></div>
+      <div class="nut-item"><div class="nut-val">${item.prot}g</div><div class="nut-label">Protein</div></div>
+      <div class="nut-item"><div class="nut-val">${item.carbs}g</div><div class="nut-label">Carbs</div></div>
+      <div class="nut-item"><div class="nut-val">${item.fat}g</div><div class="nut-label">Fat</div></div>
+    </div>
+    ${tagsHtml ? `<div class="nut-tags">${tagsHtml}</div>` : ''}
+    <p style="margin-top:14px;font-size:12px;color:var(--text-muted)">
+      Price: ${formatPeso(item.price)}  ·  Stock: ${item.stock === 0 ? 'Sold Out' : item.stock}
+    </p>
+  `;
+  document.getElementById('nutritionModal').classList.remove('hidden');
+}
+
+// ============================================================
+//  SALES PAGE
+// ============================================================
+
+function renderSalesPage() {
+  // Stats
+  const todayOrders = orderHistory.filter(o => o.date === today());
+  const todayRevenue = todayOrders.reduce((s,o) => s+o.total, 0);
+  const totalRevenue = orderHistory.reduce((s,o) => s+o.total, 0);
+  const avgOrder = orderHistory.length ? totalRevenue / orderHistory.length : 0;
+  const sessionOrders = orderHistory.filter(o => o.staff === staff.username && o.date === today());
+  const sessionRevenue = sessionOrders.reduce((s,o)=>s+o.total,0);
+
+  const statsGrid = document.getElementById('statsGrid');
+  statsGrid.innerHTML = `
+    <div class="stat-card" data-icon="💰"><div class="stat-label">Today's Revenue</div><div class="stat-value">${formatPeso(todayRevenue)}</div><div class="stat-sub">${todayOrders.length} orders today</div></div>
+    <div class="stat-card" data-icon="📦"><div class="stat-label">Total Orders</div><div class="stat-value">${orderHistory.length}</div><div class="stat-sub">All time</div></div>
+    <div class="stat-card" data-icon="📊"><div class="stat-label">Avg. Order Value</div><div class="stat-value">${formatPeso(avgOrder)}</div><div class="stat-sub">Per transaction</div></div>
+    <div class="stat-card" data-icon="🏪"><div class="stat-label">Session Revenue</div><div class="stat-value">${formatPeso(sessionRevenue)}</div><div class="stat-sub">${sessionOrders.length} orders this session</div></div>
+  `;
+
+  // Monthly chart
+  const monthly = {};
+  orderHistory.forEach(o => {
+    const ym = o.date ? o.date.substr(0,7) : '—';
+    monthly[ym] = (monthly[ym] || 0) + o.total;
+  });
+  const labels = Object.keys(monthly).sort();
+  const values = labels.map(l => monthly[l]);
+  renderBarChart('salesChart', labels, values, 'Monthly Revenue (₱)', '#e8a84a');
+
+  // Orders table
+  const tbody = document.getElementById('ordersBody');
+  tbody.innerHTML = '';
+  [...orderHistory].reverse().slice(0, 30).forEach(o => {
+    const tr = document.createElement('tr');
+    const itemNames = o.items.map(i => `${i.name}×${i.qty}`).join(', ');
+    tr.innerHTML = `
+      <td>${o.date} ${o.time}</td>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${itemNames}">${itemNames}</td>
+      <td style="font-weight:600;color:var(--gold)">${formatPeso(o.total)}</td>
+      <td>${o.customer}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  if (!orderHistory.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text-muted)">No orders yet.</td></tr>';
+  }
+}
+
+// ============================================================
+//  ANALYTICS PAGE
+// ============================================================
+
+function renderAnalyticsPage() {
+  // Top items
+  const itemCount = {}, itemRevenue = {};
+  orderHistory.forEach(o => {
+    o.items.forEach(i => {
+      itemCount[i.name]   = (itemCount[i.name]   || 0) + i.qty;
+      itemRevenue[i.name] = (itemRevenue[i.name] || 0) + i.qty * i.unitPrice;
+    });
+  });
+  const sortedItems = Object.entries(itemCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const topLabels = sortedItems.map(x=>x[0]);
+  const topValues = sortedItems.map(x=>x[1]);
+
+  // Mood chart
+  const moodLabels = Object.keys(moodStats);
+  const moodValues = moodLabels.map(k => moodStats[k]);
+
+  // Inventory stats
+  const soldOut = MENU.filter(m => m.stock === 0).length;
+  const lowStock = MENU.filter(m => m.stock > 0 && m.stock < 5).length;
+  const totalCustomers = customers.length;
+  const loyalCustomers = customers.filter(c => c.visits >= 10).length;
+
+  const grid = document.getElementById('analyticsGrid');
+  grid.innerHTML = `
+    <div class="stat-card" data-icon="🏆"><div class="stat-label">Total Customers</div><div class="stat-value">${totalCustomers}</div></div>
+    <div class="stat-card" data-icon="⭐"><div class="stat-label">Loyalty Members</div><div class="stat-value">${loyalCustomers}</div><div class="stat-sub">10+ visits</div></div>
+    <div class="stat-card" data-icon="📦"><div class="stat-label">Sold Out Items</div><div class="stat-value">${soldOut}</div></div>
+    <div class="stat-card" data-icon="⚠️"><div class="stat-label">Low Stock Items</div><div class="stat-value">${lowStock}</div><div class="stat-sub">Under 5 units</div></div>
+  `;
+
+  renderBarChart('topItemsChart', topLabels, topValues, 'Orders', '#c8813a');
+  renderPieChart('moodChart', moodLabels.length ? moodLabels : ['No data'], moodValues.length ? moodValues : [1]);
+
+  // Customer list
+  const custList = document.getElementById('customersList');
+  custList.innerHTML = '';
+  if (!customers.length) {
+    custList.innerHTML = '<div style="color:var(--text-muted);font-size:14px">No customers yet.</div>';
+    return;
+  }
+  [...customers].sort((a,b) => b.totalSpent - a.totalSpent).slice(0, 12).forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'customer-card';
+    div.innerHTML = `
+      <div class="customer-avatar">👤</div>
+      <div>
+        <div class="customer-name">${c.name}</div>
+        <div class="customer-meta">${c.visits} visits · ${formatPeso(c.totalSpent)} total</div>
+        <div class="customer-meta">Last: ${c.lastVisit}</div>
+      </div>
+      ${c.visits >= 10 ? '<div class="customer-loyalty">⭐ Loyal</div>' : ''}
+    `;
+    custList.appendChild(div);
+  });
+}
+
+// ============================================================
+//  INVENTORY PAGE
+// ============================================================
+
+function renderInventoryPage() {
+  const tbody = document.getElementById('inventoryBody');
+  tbody.innerHTML = '';
+  MENU.forEach(item => {
+    const status = item.stock === 0 ? '<span class="item-stock-badge stock-out">Sold Out</span>'
+                 : item.stock < 5   ? `<span class="item-stock-badge stock-low">Low</span>`
+                 :                    `<span class="item-stock-badge stock-ok">OK</span>`;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:var(--text-muted)">${item.id}</td>
+      <td style="font-weight:500">${item.name}</td>
+      <td style="color:var(--text-muted)">${item.cat}</td>
+      <td style="color:var(--gold);font-weight:600">${formatPeso(item.price)}</td>
+      <td><input type="number" class="stock-input" value="${item.stock}" min="0" id="stock_${item.id}"/></td>
+      <td>${status}</td>
+      <td><button class="update-btn" onclick="updateStock(${item.id})">Update</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function updateStock(id) {
+  const input = document.getElementById('stock_' + id);
+  const val = parseInt(input.value);
+  if (isNaN(val) || val < 0) { showToast('Invalid stock value'); return; }
+  const item = findItem(id);
+  if (item) { item.stock = val; saveState(); showToast(`Updated: ${item.name} → ${val}`); renderInventoryPage(); }
+}
+
+function restockAll() {
+  MENU.forEach(item => item.stock = 30);
+  saveState(); renderInventoryPage();
+  showToast('All items restocked to 30 units!');
+}
+
+// ============================================================
+//  CHARTS (vanilla Canvas — no library needed)
+// ============================================================
+
+function renderBarChart(canvasId, labels, values, dataLabel, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width = canvas.offsetWidth;
+  const H = canvas.height = parseInt(canvas.getAttribute('height')) || 200;
+  ctx.clearRect(0,0,W,H);
+
+  if (!values.length) return;
+  const max = Math.max(...values) || 1;
+  const padL = 50, padR = 20, padT = 20, padB = 44;
+  const barW_total = (W - padL - padR) / labels.length;
+  const barW = Math.min(barW_total * 0.55, 40);
+  const chartH = H - padT - padB;
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(200,129,58,0.1)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = padT + chartH - (i / 4) * chartH;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+  }
+
+  // Bars
+  labels.forEach((label, i) => {
+    const x = padL + i * barW_total + (barW_total - barW) / 2;
+    const barH = (values[i] / max) * chartH;
+    const y = padT + chartH - barH;
+
+    const grad = ctx.createLinearGradient(0, y, 0, y + barH);
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, color + '55');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect(x, y, barW, barH, [4,4,0,0]);
+    ctx.fill();
+
+    // Value label
+    ctx.fillStyle = 'rgba(245,230,200,0.7)';
+    ctx.font = '10px DM Sans, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(values[i] % 1 === 0 ? values[i] : values[i].toFixed(0), x + barW/2, y - 5);
+
+    // X label (truncated)
+    ctx.fillStyle = 'rgba(160,128,96,0.9)';
+    ctx.font = '9px DM Sans, sans-serif';
+    const shortLabel = label.length > 10 ? label.substr(0,9)+'…' : label;
+    ctx.fillText(shortLabel, x + barW/2, H - padB + 14);
+  });
+}
+
+const PIE_COLORS = ['#c8813a','#7a9e7e','#6b9ec4','#c97b7b','#d4b896','#8fa8c8','#b89a6a','#9ec4a0'];
+
+function renderPieChart(canvasId, labels, values) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width = canvas.offsetWidth;
+  const H = canvas.height = parseInt(canvas.getAttribute('height')) || 260;
+  ctx.clearRect(0,0,W,H);
+
+  const total = values.reduce((a,b)=>a+b,0) || 1;
+  const cx = W/2 - 40, cy = H/2, r = Math.min(cx, cy) - 20;
+  let start = -Math.PI/2;
+
+  values.forEach((v, i) => {
+    const slice = (v / total) * 2 * Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, start + slice);
+    ctx.closePath();
+    ctx.fillStyle = PIE_COLORS[i % PIE_COLORS.length];
+    ctx.fill();
+    ctx.strokeStyle = '#1a0f0a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    start += slice;
+  });
+
+  // Legend
+  const legX = W - 90, legY = 24;
+  labels.forEach((l, i) => {
+    const y = legY + i * 22;
+    ctx.fillStyle = PIE_COLORS[i % PIE_COLORS.length];
+    ctx.fillRect(legX, y, 12, 12);
+    ctx.fillStyle = 'rgba(245,230,200,0.7)';
+    ctx.font = '11px DM Sans, sans-serif';
+    ctx.textAlign = 'left';
+    const pct = ((values[i]/total)*100).toFixed(0);
+    ctx.fillText(`${l.substr(0,8)} ${pct}%`, legX+16, y+10);
+  });
+}
+
+// ============================================================
+//  CHATBOT — AI-Powered via Anthropic API
+// ============================================================
+
+// Full conversation history for multi-turn memory
+let chatHistory = [];
+
+// Build a detailed menu snapshot to inject into the system prompt
+function buildMenuContext() {
+  return MENU.map(item => {
+    const tags = item.tags.length ? ` [${item.tags.join(', ')}]` : '';
+    const stock = item.stock === 0 ? ' — SOLD OUT' : ` — ${item.stock} in stock`;
+    return `• ${item.name} (ID:${item.id}) | ${item.cat} | ₱${item.price} | ${item.cal} kcal | Protein:${item.prot}g Carbs:${item.carbs}g Fat:${item.fat}g${tags}${stock}`;
+  }).join('\n');
+}
+
+const MOODBOT_SYSTEM = `You are MoodBot, the friendly and knowledgeable AI assistant for G-4 Mood Café — a cozy café in the Philippines. You speak in a warm, casual, helpful tone. You can use emojis naturally.
+
+Your main jobs:
+1. Help customers with food allergies and dietary concerns — be specific and accurate. Always cross-reference the actual menu.
+2. Recommend menu items based on mood, dietary restrictions, allergies, health goals, or preferences.
+3. Answer any food-related questions: ingredients, nutrition, substitutions, what to avoid.
+4. Help customers understand what dishes contain (e.g. dairy, gluten, nuts, eggs, shellfish, soy, etc.).
+
+IMPORTANT ALLERGY & DIETARY KNOWLEDGE:
+- Lactose intolerance / dairy-free: Avoid items with milk, cheese, cream, butter, yogurt. Safe drinks: black coffee (Americano, Cold Brew), Iced Tea, fruit smoothies. Safe foods: most burgers without cheese (note Mushroom Swiss has Swiss cheese), fries, edamame, fruit bowl. Suggest oat/almond/soy milk swaps for lattes.
+- Gluten intolerance / celiac: Avoid all bread, pasta, pizza, pancakes, donuts, cookies, toast. Safe: eggs, bacon, fries (check fryer cross-contamination), edamame, fruit bowl, oats bowl, black coffee drinks.
+- Nut allergy: Be cautious with cookies (may contain nuts), granola parfait (may contain nuts). Pesto pasta often uses pine nuts. Alert them clearly.
+- Egg allergy: Avoid Egg & Cheese Sandwich, Bacon & Eggs, Full English Breakfast, Carbonara (uses eggs). Most drinks are safe.
+- Soy allergy: Soy milk latte should be avoided. Alert for soy-based ingredients in some Asian-style items.
+- Shellfish/seafood allergy: Tuna Melt contains tuna — warn them.
+- Diabetes / low sugar: Recommend low-calorie, low-carb options. Avoid sweet lattes, donuts, pancakes, cookies, smoothies with sugar. Suggest sugar-free options like Americano, plain eggs, salads.
+- High cholesterol / heart health: Avoid full English breakfast, bacon, heavy burgers. Suggest fruit bowl, oats, avocado toast, veggie options.
+- Keto / low carb: Avoid pasta, pizza, bread, fries, pancakes, donuts. Focus on eggs, bacon, burgers (without bun if possible), drinks without sugar.
+- Vegan: No meat, dairy, eggs. Safe: Veggie Quinoa Burger, Avocado Toast, Aglio e Olio, Vegan Garden Pizza, Fries, Fruit Bowl, Edamame, Chamomile Tea, Americano, Cold Brew, Iced Tea, Oat Milk Latte, Smoothies, Lavender Lemonade.
+- Vegetarian: No meat. Wide selection available.
+- Pregnancy / prenatal: Avoid raw or undercooked eggs (carbonara uses raw egg), high-caffeine drinks. Suggest decaf or matcha alternatives, well-cooked meals.
+- IBS / sensitive stomach: Avoid high-fat fried foods, spicy items (Spicy Sriracha Burger). Suggest gentle options like oats, plain toast, chamomile tea, fruit bowl.
+
+CAFÉ INFO:
+- Open: 7am–10pm daily
+- WiFi: MoodCafe_Guest | Password: espresso2024  
+- Loyalty: 10+ visits = free size upgrade
+- Milk alternatives available for drinks: Oat (+₱15), Almond (+₱15), Soy (+₱10), Coconut (+₱15)
+- Currency: Philippine Peso (₱)
+
+CURRENT MENU:
+${buildMenuContext()}
+
+When someone mentions an allergy or intolerance:
+1. Acknowledge it warmly and take it seriously
+2. List what they should AVOID from our menu
+3. List what is SAFE for them to order
+4. Suggest a specific combo or recommendation
+5. Mention that they can request milk alternatives for drinks
+
+Keep replies concise but thorough. Use bullet points for lists. Never make the customer feel like a burden.`;
+
+function toggleChatbot() {
+  const panel = document.getElementById('chatbotPanel');
+  panel.classList.toggle('hidden');
+  if (!panel.classList.contains('hidden')) {
+    document.getElementById('chatInput').focus();
+  }
+}
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text  = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  appendChat('user', text);
+  chatHistory.push({ role: 'user', content: text });
+
+  // Show typing indicator
+  const typingId = showTyping();
+
+  callMoodBotAI(typingId);
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const id = 'typing_' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'chat-msg bot';
+  div.id = id;
+  div.innerHTML = `
+    <span class="chat-avatar">🤖</span>
+    <div class="chat-bubble typing-bubble">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+  `;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return id;
+}
+
+async function callMoodBotAI(typingId) {
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: MOODBOT_SYSTEM,
+        messages: chatHistory
+      })
+    });
+
+    const data = await response.json();
+    const reply = data.content?.[0]?.text || "Sorry, I couldn't process that. Please try again!";
+
+    // Remove typing indicator
+    const typingEl = document.getElementById(typingId);
+    if (typingEl) typingEl.remove();
+
+    // Add assistant reply to history
+    chatHistory.push({ role: 'assistant', content: reply });
+
+    // Render the reply (supports line breaks and bullets)
+    appendChat('bot', formatBotReply(reply));
+
+  } catch (err) {
+    const typingEl = document.getElementById(typingId);
+    if (typingEl) typingEl.remove();
+    appendChat('bot', "⚠️ I'm having trouble connecting right now. Please try again in a moment!");
+    console.error('MoodBot API error:', err);
+  }
+}
+
+// Convert plain text with bullets/newlines into formatted HTML
+function formatBotReply(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n•\s/g, '<br/>• ')
+    .replace(/\n-\s/g, '<br/>• ')
+    .replace(/\n(\d+)\.\s/g, '<br/>$1. ')
+    .replace(/\n/g, '<br/>');
+}
+
+function appendChat(role, html) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = `chat-msg ${role}`;
+  const avatar = role === 'bot' ? '🤖' : '😊';
+  div.innerHTML = `
+    <span class="chat-avatar">${avatar}</span>
+    <div class="chat-bubble">${html}</div>
+  `;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ============================================================
+//  RESPONSIVE CHART RESIZE
+// ============================================================
+window.addEventListener('resize', () => {
+  const page = document.querySelector('.page.active');
+  if (!page) return;
+  if (page.id === 'page-sales') renderSalesPage();
+  if (page.id === 'page-analytics') renderAnalyticsPage();
+});
+</script>
+</body>
+</html>
