@@ -944,7 +944,7 @@ async function callMoodBotAI(typingId) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': 'YOUR_API_KEY_HERE',
+        'x-api-key': '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',
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-access': 'true'
       },
